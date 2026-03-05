@@ -29,7 +29,7 @@ const createHeader = ({ name, types }) => {
   return ["div", { class: "header" }, pokemonName, typeContainer];
 };
 
-const createStatTableRows = ({ stats }) => {
+const createTableRows = ({ stats }) => {
   const tableData = Object.entries(stats).map((
     [key, value],
   ) => ["tr", { class: "row" }, ["td", { class: "stat-name" }, key], [
@@ -42,11 +42,11 @@ const createStatTableRows = ({ stats }) => {
 
 const createPokemonCard = (pokemon) => {
   const img = ["div", { class: "image-container" }, createImage(pokemon)];
-  const metadata = ["div", { class: "meta-data" }, createHeader(pokemon)];
+  const metadata = ["div", { class: "metadata" }, createHeader(pokemon)];
   const statsData = [
     "table",
     { class: "stats-info" },
-    ...createStatTableRows(pokemon),
+    ...createTableRows(pokemon),
   ];
   const card = createFragments([
     "div",
@@ -58,20 +58,30 @@ const createPokemonCard = (pokemon) => {
   return card;
 };
 
-const filterPokemonOnType = (allPokemon, pokemonType) =>
+const filterSpecificPokemon = (allPokemon, pokemonType) =>
   allPokemon.filter((pokemon) => pokemon.types.includes(pokemonType));
 
-const createNavigationLinks = (types) => {
-  const navigation = types.map((
-    type,
-  ) => ["li", { class: "navigation" }, ["a", {
-    class: "link",
-    href: type === "all" ? "/" : type,
-  }, type]]);
-  return navigation;
+const createItem = (pokemonType, currentType) => {
+  return pokemonType === currentType
+    ? ["li", { class: `navigation ${currentType}` }, ["a", {
+      class: "link",
+      href: pokemonType === "all" ? "/" : pokemonType,
+    }, pokemonType]]
+    : ["li", { class: "navigation" }, ["a", {
+      class: "link",
+      href: pokemonType === "all" ? "/" : pokemonType,
+    }, pokemonType]];
 };
 
-const createNavigation = () => {
+const createNavLinks = (pokemonTypes, pokemonType) => {
+  const currentType = pokemonType === "" ? 'all' : pokemonType;
+  const navigationList = pokemonTypes.map((type) =>
+    createItem(type, currentType)
+  );
+  return navigationList;
+};
+
+const createNavigation = (currentType) => {
   const pokemonTypes = [
     "all",
     "bug",
@@ -93,25 +103,25 @@ const createNavigation = () => {
   return [
     "ul",
     { class: "side-bar-contents" },
-    ...createNavigationLinks(pokemonTypes),
+    ...createNavLinks(pokemonTypes, currentType),
   ];
 };
 
 const renderPage = (cardsContainer, allPokemon, pokemonType, navContainer) => {
-  const navigation = createNavigation();
+  const navigation = createNavigation(pokemonType);
   navContainer.append(createFragments(navigation));
   const pokemon = pokemonType === ""
     ? allPokemon
-    : filterPokemonOnType(allPokemon, pokemonType);
+    : filterSpecificPokemon(allPokemon, pokemonType);
   const cards = pokemon.map(createPokemonCard);
   cardsContainer.append(...cards);
 };
 
 window.onload = (e) => {
-  const type = window.location.pathname.split("/").pop();
+  const pokemonType = window.location.pathname.split("/").pop();
   const cardsContainer = document.querySelector(".cards-container");
   const navContainer = document.querySelector(".nav-container");
   fetchData().then((allPokemon) =>
-    renderPage(cardsContainer, allPokemon, type, navContainer)
+    renderPage(cardsContainer, allPokemon, pokemonType, navContainer)
   );
 };
