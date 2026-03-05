@@ -43,7 +43,11 @@ const createStatTableRows = ({ stats }) => {
 const createPokemonCard = (pokemon) => {
   const img = ["div", { class: "image-container" }, createImage(pokemon)];
   const metadata = ["div", { class: "meta-data" }, createHeader(pokemon)];
-  const statsData = ["table", { class: "stats-info" }, ...createStatTableRows(pokemon)];
+  const statsData = [
+    "table",
+    { class: "stats-info" },
+    ...createStatTableRows(pokemon),
+  ];
   const card = createFragments([
     "div",
     { class: "card" },
@@ -54,8 +58,8 @@ const createPokemonCard = (pokemon) => {
   return card;
 };
 
-const filterPokemon = (allPokemon, type) =>
-  allPokemon.filter((pokemon) => pokemon.types.includes(type));
+const filterPokemonOnType = (allPokemon, pokemonType) =>
+  allPokemon.filter((pokemon) => pokemon.types.includes(pokemonType));
 
 const createNavigationLinks = (types) => {
   const navigation = types.map((
@@ -68,7 +72,7 @@ const createNavigationLinks = (types) => {
 };
 
 const createNavigation = () => {
-  const types = [
+  const pokemonTypes = [
     "all",
     "bug",
     "dragon",
@@ -89,14 +93,16 @@ const createNavigation = () => {
   return [
     "ul",
     { class: "side-bar-contents" },
-    ...createNavigationLinks(types),
+    ...createNavigationLinks(pokemonTypes),
   ];
 };
 
-const renderPage = (cardsContainer, allPokemon, type, navContainer) => {
-  const navigation = createNavigation(type);
+const renderPage = (cardsContainer, allPokemon, pokemonType, navContainer) => {
+  const navigation = createNavigation();
   navContainer.append(createFragments(navigation));
-  const pokemon = type === "" ? allPokemon : filterPokemon(allPokemon, type);
+  const pokemon = pokemonType === ""
+    ? allPokemon
+    : filterPokemonOnType(allPokemon, pokemonType);
   const cards = pokemon.map(createPokemonCard);
   cardsContainer.append(...cards);
 };
@@ -108,5 +114,4 @@ window.onload = (e) => {
   fetchData().then((allPokemon) =>
     renderPage(cardsContainer, allPokemon, type, navContainer)
   );
-  console.log("window loaded");
 };
